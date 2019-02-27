@@ -1,0 +1,27 @@
+{
+    "name": "dbt/laravel-mattermost-logging-driver",
+    "description": "A log driver for Mattermost",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.1.3",
+        "laravel/framework": "^5.5|^5.6|^5.7|^5.8",
+        "thibaud-dauce/mattermost-php": "^1.2",
+        "monolog/monolog": "^1.23"
+    },
+    "authors": [
+        {
+            "name": "Thibaud Dauce",
+            "email": "thibaud.dauce@pm.me"
+        },
+        {
+            "name": "Daniel S. Deboer",
+            "email": "daniel.s.deboer@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Dbt\\Mattermost\\Logger\\": "src"
+        }
+    }
+}

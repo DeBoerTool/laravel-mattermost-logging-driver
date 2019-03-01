@@ -2,8 +2,8 @@
 
 namespace Dbt\Mattermost\Logger;
 
+use Dbt\Mattermost\Logger\Values\Level;
 use Illuminate\Routing\UrlGenerator;
-use Monolog\Logger as Monolog;
 
 final class Options
 {
@@ -36,22 +36,22 @@ final class Options
 
     public function __construct (
         string $webhook,
-        string $channel = 'town-square',
-        string $username = 'Laravel Logs',
-        array $mentions = ['@here'],
-        int $level = Monolog::INFO,
-        int $levelMention = Monolog::ERROR,
+        Level $level,
+        Level $levelMention,
+        string $channel,
+        string $username,
+        array $mentions = [],
         int $shortFieldLength = 62,
         int $maxAttachmentLength = 6000,
         ?string $iconUrl = null
     )
     {
         $this->webhook = $webhook;
+        $this->level = $level;
+        $this->levelMention = $levelMention;
         $this->channel = $channel;
         $this->username = $username;
         $this->mentions = $mentions;
-        $this->level = $level;
-        $this->levelMention = $levelMention;
         $this->shortFieldLength = $shortFieldLength;
         $this->maxAttachmentLength = $maxAttachmentLength;
         $this->iconUrl = $iconUrl;
@@ -61,14 +61,14 @@ final class Options
     {
         return new self(
             $options['webhook'],
-            $options['channel'],
-            $options['icon_url'],
-            $options['username'],
             $options['level'],
             $options['level_mention'],
+            $options['channel'],
+            $options['username'],
             $options['mentions'],
             $options['short_field_length'],
-            $options['max_attachment_length']
+            $options['max_attachment_length'],
+            $options['icon_url']
         );
     }
 
@@ -82,6 +82,16 @@ final class Options
         return $this->channel;
     }
 
+    public function level (): Level
+    {
+        return $this->level;
+    }
+
+    public function levelMention (): Level
+    {
+        return $this->levelMention;
+    }
+
     public function username (): string
     {
         return $this->username;
@@ -90,16 +100,6 @@ final class Options
     public function mentions (): array
     {
         return $this->mentions;
-    }
-
-    public function level (): int
-    {
-        return $this->level;
-    }
-
-    public function levelMention (): int
-    {
-        return $this->levelMention;
     }
 
     public function shortFieldLength (): int

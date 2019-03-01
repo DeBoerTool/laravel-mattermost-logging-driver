@@ -2,22 +2,22 @@
 
 namespace Dbt\Mattermost\Logger;
 
-use Monolog\Logger as Monolog;
+use Monolog\Logger;
 use ThibaudDauce\Mattermost\Mattermost;
 
-final class Logger
+final class Factory
 {
     /** @var \ThibaudDauce\Mattermost\Mattermost */
     private $mattermost;
 
-    public function __construct(Mattermost $mattermost)
+    public function __construct (Mattermost $mattermost)
     {
         $this->mattermost = $mattermost;
     }
 
-    public function __invoke ($options): Monolog
+    public function __invoke (array $options): Logger
     {
-        return new Monolog('mattermost', [
+        return new Logger('mattermost', [
             new Handler($this->mattermost, $options)
         ]);
     }

@@ -2,10 +2,13 @@
 
 namespace Dbt\Mattermost\Logger;
 
+use Dbt\Mattermost\Logger\Interfaces\Options;
+use Dbt\Mattermost\Logger\Values\Format;
 use Dbt\Mattermost\Logger\Values\Level;
+use Dbt\Mattermost\Logger\Values\Webhook;
 use Illuminate\Routing\UrlGenerator;
 
-final class Options
+final class DefaultOptions implements Options
 {
     /** @var string */
     private $webhook;
@@ -34,10 +37,18 @@ final class Options
     /** @var string|null */
     private $iconUrl;
 
+    /** @var \Dbt\Mattermost\Logger\Values\Format */
+    private $titleFormat;
+
+    /** @var \Dbt\Mattermost\Logger\Values\Format */
+    private $titleMentionFormat;
+
     public function __construct (
-        string $webhook,
+        Webhook $webhook,
         Level $level,
         Level $levelMention,
+        Format $titleFormat,
+        Format $titleMentionFormat,
         string $channel,
         string $username,
         array $mentions = [],
@@ -49,6 +60,8 @@ final class Options
         $this->webhook = $webhook;
         $this->level = $level;
         $this->levelMention = $levelMention;
+        $this->titleFormat = $titleFormat;
+        $this->titleMentionFormat = $titleMentionFormat;
         $this->channel = $channel;
         $this->username = $username;
         $this->mentions = $mentions;
@@ -60,9 +73,11 @@ final class Options
     public static function of (array $options)
     {
         return new self(
-            $options['webhook'],
+            new Webhook($options['webhook']),
             new Level($options['level']),
             new Level($options['level_mention']),
+            new Format($options['title_format']),
+            new Format($options['title_mention_format']),
             $options['channel'],
             $options['username'],
             $options['mentions'],
@@ -72,7 +87,7 @@ final class Options
         );
     }
 
-    public function webhook (): string
+    public function webhook (): Webhook
     {
         return $this->webhook;
     }
@@ -90,6 +105,16 @@ final class Options
     public function levelMention (): Level
     {
         return $this->levelMention;
+    }
+
+    public function titleFormat (): Format
+    {
+        return $this->titleFormat;
+    }
+
+    public function titleMentionFormat (): Format
+    {
+        return $this->titleMentionFormat;
     }
 
     public function username (): string

@@ -4,11 +4,12 @@ namespace Dbt\Mattermost\Logger;
 
 use Closure;
 use Coduo\ToString\StringConverter;
+use Dbt\Mattermost\Logger\Interfaces\Message;
 use Exception;
 use ThibaudDauce\Mattermost\Attachment;
-use ThibaudDauce\Mattermost\Message as MatterMostMessage;
+use ThibaudDauce\Mattermost\Message as MattermostMessage;
 
-class Message extends MatterMostMessage
+class DefaultMessage extends MattermostMessage implements Message
 {
     public function addExceptionAttachment (Exception $ex, int $maxLen): void
     {
@@ -17,7 +18,7 @@ class Message extends MatterMostMessage
         );
     }
 
-    public function addContextAttachment(array $context, int $shortLength): void
+    public function addContextAttachment (array $context, int $shortLength): void
     {
         $this->attachment(
             $this->contextCb($context, $shortLength)

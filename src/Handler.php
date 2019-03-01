@@ -2,26 +2,37 @@
 
 namespace Dbt\Mattermost\Logger;
 
+use Dbt\Mattermost\Logger\Interfaces\Options;
+use Dbt\Mattermost\Logger\Interfaces\Scribe;
 use Dbt\Mattermost\Logger\Values\Level;
 use Monolog\Logger;
-use ThibaudDauce\Mattermost\Mattermost;
 use Monolog\Handler\AbstractProcessingHandler;
 
 final class Handler extends AbstractProcessingHandler
 {
-    /** @var \Dbt\Mattermost\Logger\Options */
+    /** @var \Dbt\Mattermost\Logger\Interfaces\Options */
     private $options;
 
-    /** @var \ThibaudDauce\Mattermost\Mattermost */
+    /** @var \Dbt\Mattermost\Logger\Mattermost */
     private $mattermost;
 
-    public function __construct (Mattermost $mattermost, $options = [])
+    /** @var \Dbt\Mattermost\Logger\Interfaces\Scribe */
+    private $scribeClass;
+
+    /** @var \Dbt\Mattermost\Logger\Interfaces\Message */
+    private $messageClass;
+
+    public function __construct (
+        Mattermost $mattermost,
+        Options $options,
+        string $scribeClass,
+        string $messageClass
+    )
     {
         $this->mattermost = $mattermost;
-
-        $this->options = Options::of(
-            $this->mergedOptions($options)
-        );
+        $this->options = $options;
+        $this->scribeClass = $scribeClass;
+        $this->messageClass = $messageClass;
     }
 
     public function write (array $record)
@@ -30,33 +41,19 @@ final class Handler extends AbstractProcessingHandler
             return;
         }
 
-        $scribe = new Scribe($this->options, $record);
-
         $this->mattermost->send(
-            $scribe->message(),
+            $this->makeScribe($record)->message(),
             $this->options->webhook()
         );
     }
 
-    protected function defaultOptions (): array
+    private function makeScribe (array $record): Scribe
     {
-        return [
-            'webhook' => null,
-            'level' => Logger::INFO,
-            'level_mention' => Logger::ERROR,
-            'channel' => 'town-square',
-            'username' => 'Laravel Logs',
-            'mentions' => ['@channel'],
-            'short_field_length' => 62,
-            'max_attachment_length' => 6000,
-            'icon_url' => null,
-        ];
-    }
-
-    private function mergedOptions (array $options): array
-    {
-
-        return array_merge($this->defaultOptions(), $options);
+        return new $this->scribeClass(
+            new $this->messageClass,
+            $this->options,
+            $record
+        );
     }
 
     private function shouldWrite (int $level): bool

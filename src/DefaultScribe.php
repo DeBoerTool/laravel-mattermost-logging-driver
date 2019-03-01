@@ -2,9 +2,12 @@
 
 namespace Dbt\Mattermost\Logger;
 
+use Dbt\Mattermost\Logger\Interfaces\Message;
+use Dbt\Mattermost\Logger\Interfaces\Options;
+use Dbt\Mattermost\Logger\Interfaces\Scribe;
 use Dbt\Mattermost\Logger\Values\Level;
 
-final class Scribe
+final class DefaultScribe implements Scribe
 {
     /** @var array */
     private $record;
@@ -15,15 +18,20 @@ final class Scribe
     /** @var ?Exception */
     private $exception;
 
-    /** @var \Dbt\Mattermost\Logger\Options */
+    /** @var \Dbt\Mattermost\Logger\Interfaces\Options */
     private $options;
 
-    private $titleFormat = '**[%s]** %s';
-    private $titleMentionFormat = ' (ping %s)';
+    /** @var \Dbt\Mattermost\Logger\Interfaces\Message */
+    private $message;
 
-    public function __construct(Options $options, array $record)
+    public function __construct(
+        Message $message,
+        Options $options,
+        array $record
+    )
     {
         $this->options = $options;
+        $this->message = $message;
 
         $this->setRecord($record);
         $this->setContext($record);
@@ -32,41 +40,36 @@ final class Scribe
 
     public function message (): Message
     {
-        $message = new Message();
-
-        $message->channel($this->options->channel());
-        $message->username($this->options->username());
-        $message->iconUrl($this->options->iconUrl());
-        $message->text($this->title());
+        $this->message->channel($this->options->channel());
+        $this->message->username($this->options->username());
+        $this->message->iconUrl($this->options->iconUrl());
+        $this->message->text($this->title());
 
         if ($this->exception) {
-            $message->addExceptionAttachment(
+            $this->message->addExceptionAttachment(
                 $this->exception,
                 $this->options->maxAttachmentLength()
             );
         }
 
         if ($this->context) {
-            $message->addContextAttachment(
+            $this->message->addContextAttachment(
                 $this->context,
                 $this->options->shortFieldLength()
             );
         }
 
-        return $message;
+        return $this->message;
     }
 
     public function title (): string
     {
-        $title = sprintf(
-            $this->titleFormat,
-            $this->record['level_name'],
-            $this->record['message']
+        $title = $this->options->titleFormat()->apply(
+            $this->record['level_name'], $this->record['message']
         );
 
         if ($this->shouldMention()) {
-            $title .= sprintf(
-                $this->titleMentionFormat,
+            $title .= $this->options->titleMentionFormat()->apply(
                 $this->mentions()
             );
         }
@@ -81,6 +84,9 @@ final class Scribe
         );
     }
 
+    /**
+     * @todo Refactor this to a value object.
+     */
     public function mentions ()
     {
         $mentions = array_map(function ($mention) {

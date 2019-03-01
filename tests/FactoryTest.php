@@ -3,10 +3,10 @@
 namespace Dbt\Tests;
 
 use Dbt\Mattermost\Logger\Factory;
+use Dbt\Mattermost\Logger\Mattermost;
 use GuzzleHttp\Client;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
-use ThibaudDauce\Mattermost\Mattermost;
 
 class FactoryTest extends TestCase
 {

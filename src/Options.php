@@ -61,8 +61,8 @@ final class Options
     {
         return new self(
             $options['webhook'],
-            $options['level'],
-            $options['level_mention'],
+            new Level($options['level']),
+            new Level($options['level_mention']),
             $options['channel'],
             $options['username'],
             $options['mentions'],

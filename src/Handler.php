@@ -42,8 +42,8 @@ final class Handler extends AbstractProcessingHandler
     {
         return [
             'webhook' => null,
-            'level' => new Level(Logger::INFO),
-            'level_mention' => new Level(Logger::ERROR),
+            'level' => Logger::INFO,
+            'level_mention' => Logger::ERROR,
             'channel' => 'town-square',
             'username' => 'Laravel Logs',
             'mentions' => ['@channel'],

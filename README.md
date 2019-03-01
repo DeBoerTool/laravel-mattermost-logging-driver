@@ -1,30 +1,27 @@
 # Laravel Mattermost Logging Driver
 
-This driver allows you to send your logs to your Mattermost (open-source Slack alternative). It will send the exception stack traces and context of the log (the second argument of the `logger` function in Laravel).
+This driver allows you to send your logs to your Mattermost instance. It will attach exception stack traces and the log context/
 
-![example.png](https://gitlab.com/thibauddauce/laravel-mattermost-logger/raw/master/example.png)
 
 ## Installation
 
 ```
-composer require thibaud-dauce/laravel-mattermost-logger
+composer require dbt/laravel-mattermost-logging-driver
 ```
 
 ## Configuration
-
-### Add the log driver
 
 Add the new driver in your `config/logging.php`:
 
 ```php
 'mattermost' => [
     'driver' => 'custom',
-    'via' => ThibaudDauce\MattermostLogger\MattermostLogger::class,
+    'via' => Dbt\Mattermost\Logger\Factory::class,
     'webhook' => env('MATTERMOST_WEBHOOK'),
 ],
 ```
 
-And update your stack in `config/logging.php`:
+You can also add the `mattermost` channel to your `stack` driver if you wish:
 
 ```php
 'stack' => [
@@ -33,35 +30,39 @@ And update your stack in `config/logging.php`:
 ],
 ```
 
-Don't forget to put `LOG_CHANNEL=single` in your local and testing environments if you don't want to send logs to Mattermost during your tests.
+Don't forget to set `LOG_CHANNEL=single` in your local and testing environments if you don't want to send logs to Mattermost during your tests.
 
-### Options availables
+### Options
 
-You can put options after the `driver` and `via` keys in your `config/logging.php`. All options with their defaults are in the code https://gitlab.com/thibauddauce/laravel-mattermost-logger/blob/master/src/MattermostHandler.php#L14-22
+You can add additional options after the `driver` and `via` keys in your `config/logging.php`.
 
-- **webhook** (nothing): webhook URL to your Mattermost instance
-- **channel** (town-square): channel slug where the logs will be sent to
-- **icon_url** (nothing): relative URL for the icon showed in Mattermost (the package will use the `url()` helper to generate the full path)
-- **username** (Laravel Logs): username showed in Mattermost
-- **level** (INFO): below this level, the logs will not be sent to your Mattermost instance (by default debug logs are not sent)
-- **level_mention** (ERROR): above this level, the logs will be red in Mattermost and people will get pinged
-- **mentions** ([@here]): array of people to ping in case of log above **level_mention**
-- **short_field_length** (62): context content longer than this value will be put in a long field in Mattermost (two colmun layout, see screenshot)
-- **max_attachment_length** (6000): truncate the content below this value (Mattermost will refuse the payload otherwise)
+| Option                  | Default         | Description                                                                                                                                            |
+|-------------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `webhook`               |                 | Your Mattermost webhook url. You must set this.                                                                                                        |
+| `channel`               | `town-square`   | The channel slug where the logs will be send.                                                                                                          |
+| `level`                 | `Logger::INFO`  | Messages below this log level will not be sent.                                                                                                        |
+| `level_mention`         | `Logger::ERROR` | Messages at or above this level will ping the usernames in the `mentions` key                                                                          |
+| `username`              | `Laravel Log`   | The username to display                                                                                                                                |
+| `mentions`              | `['@channel']`  | An array of usernames to ping                                                                                                                          |
+| `short_field_length`    | `62`            | Context content longer than this value will be formatted with a long field                                                                             |
+| `max_attachment_length` | `6000`          | Content past this length will be truncated to avoid Mattermost refusing the payload.                                                                   |
+| `icon_url`              | `null`          | A relative icon URL to display. `UrlGenerator` is called to get the full path, so you can use this in multiple environments without resetting the key. |
+
 
 ## Usage
 
+Use this driver like any other. You can send directly to the `mattermost` channel by using the `Log` facade, calling the `logger` function, or getting `LogManager` from the container. Then call `channel(...)` or `stack([...])`. 
+
 ```php
-logger()->info('Some message', [
-    'context' => 'Some contex',
-    'an_array_of_things' => ['foo', 'bar', 'baz'],
-]);
-
-// Or
-
-throw new Exception('An exception occured');
+resolve(LogManager::class)
+    ->channel('mattermost') // or ->stack(['single', 'bugsnag', 'mattermost'])
+    ->info('Everyone loves a good log message.');
 ```
 
-## TODO
+## Sundries
 
-- Add the possibility to queue the HTTP request
+Contributions welcomed.
+
+MIT Licensed. Do as you wish.
+
+Based on https://gitlab.com/thibauddauce/laravel-mattermost-logger/ 

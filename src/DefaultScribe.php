@@ -6,6 +6,7 @@ use Dbt\Mattermost\Logger\Interfaces\Message;
 use Dbt\Mattermost\Logger\Interfaces\Options;
 use Dbt\Mattermost\Logger\Interfaces\Scribe;
 use Dbt\Mattermost\Logger\Values\Level;
+use Illuminate\Support\Str;
 
 final class DefaultScribe implements Scribe
 {
@@ -90,7 +91,7 @@ final class DefaultScribe implements Scribe
     public function mentions ()
     {
         $mentions = array_map(function ($mention) {
-            return str_start($mention, '@');
+            return Str::start($mention, '@');
         }, $this->options->mentions());
 
         return implode(', ', $mentions);

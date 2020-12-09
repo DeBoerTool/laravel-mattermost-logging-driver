@@ -6,6 +6,7 @@ use Dbt\Mattermost\Logger\Interfaces\Message;
 use Dbt\Mattermost\Logger\Interfaces\Options;
 use Dbt\Mattermost\Logger\Interfaces\Scribe;
 use Dbt\Mattermost\Logger\Values\Level;
+use Illuminate\Support\Str;
 
 final class DefaultScribe implements Scribe
 {
@@ -15,7 +16,7 @@ final class DefaultScribe implements Scribe
     /** @var array */
     private $context;
 
-    /** @var ?Exception */
+    /** @var ?\Exception */
     private $exception;
 
     /** @var \Dbt\Mattermost\Logger\Interfaces\Options */
@@ -85,12 +86,12 @@ final class DefaultScribe implements Scribe
     }
 
     /**
-     * @todo Refactor this to a value object.
+     * TODO: Refactor this to a value object.
      */
-    public function mentions ()
+    public function mentions (): string
     {
         $mentions = array_map(function ($mention) {
-            return str_start($mention, '@');
+            return Str::start($mention, '@');
         }, $this->options->mentions());
 
         return implode(', ', $mentions);

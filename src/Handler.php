@@ -5,7 +5,6 @@ namespace Dbt\Mattermost\Logger;
 use Dbt\Mattermost\Logger\Interfaces\Options;
 use Dbt\Mattermost\Logger\Interfaces\Scribe;
 use Dbt\Mattermost\Logger\Values\Level;
-use Monolog\Logger;
 use Monolog\Handler\AbstractProcessingHandler;
 
 final class Handler extends AbstractProcessingHandler
@@ -35,7 +34,7 @@ final class Handler extends AbstractProcessingHandler
         $this->messageClass = $messageClass;
     }
 
-    public function write (array $record)
+    public function write (array $record): void
     {
         if (!$this->shouldWrite($record['level'])) {
             return;
